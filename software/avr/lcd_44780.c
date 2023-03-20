@@ -261,7 +261,7 @@ uint8_t LCD_44780_goto(int col, int row)
   if(col < columns && row < rows)
     {
       rtn = 1;
-      LCD_44780_set_DDRAM_address(row * columns + col);
+      LCD_44780_set_DDRAM_address(row * 40 + col);
     }
   
   return rtn;

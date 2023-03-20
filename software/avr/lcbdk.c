@@ -43,8 +43,11 @@ OpMode_t current_mode = MODE_MEASURE_n;
 volatile static int t1_count = 0;
 volatile static int t0_count = 0;
 
-static float osc_l = 0.000068; // 68 uH
-static float osc_c = 680E-12;
+static float osc_l = 0.000068; //0.000068; // 68 uH
+static float osc_c = 650E-12;
+static float stray_l = 0.0;
+static float stray_c = 0.0;
+
 
 void init_buttons(void);
 ButtonPress_t get_buttons(void);
@@ -54,7 +57,9 @@ float find_c(float f);
 float find_l(float f);
 int calibrate(float* l, float* c, const float* k);
 uint32_t measure_frequency(void);
-
+void display_c(float c);
+void display_l(float l);
+void print_int(int32_t num, int digits, int dp, int sign);
 
 void timer0_init(void)
 {
@@ -93,7 +98,7 @@ void timer1_init(void)
 
 static uint16_t upper_freq = 0;
 static float freq = 0.0;
-static volatile ready_flag = 0;
+static volatile uint8_t ready_flag = 0;
 //void start_measure(void)
 //{
 //  // clear variables
@@ -195,26 +200,26 @@ int main()
   timer1_init();
   LCD_44780_init(16,2);
   LCD_44780_clear();
-  // LCD_44780_write_data('H');
-  // LCD_44780_write_data('i');
-  LCD_44780_goto(10, 1);
   
-  LCD_44780_write_string("LC BDK -- Mostly Analog Electronics (c) 2023 William Cooke");
+  LCD_44780_write_string("LC BDK (c) 2023 William Cooke");
   char st[10];
-  //itos(1000, st, 5);
-  //LCD_44780_write_string(st);
-  _delay_ms(1000);
+  LCD_44780_goto(0,1);
+  LCD_44780_write_string("Wait--warming up");
+  _delay_ms(10000);
+  LCD_44780_goto(0,1);
+  LCD_44780_write_string("Wait--calibrating");
+  // calibrate
+  _delay_ms(3000);
+  LCD_44780_clear();
+  
   //  int c = 0;
   PORTD &= 0xfe;  // turn off LED
   sei();
   //start_measure();
   while(1)
     {
-      // LCD_44780_write_data( (uint8_t)(c & 0xff) );
-      //start_measure();
       int tmp = t1_count;
-      //while(!ready_flag);
-      //ready_flag = 0;
+
       uint32_t f = measure_frequency();
       
       if(t1_count & 1)
@@ -226,20 +231,32 @@ int main()
        PORTD &= 0xfe;
       }
       LCD_44780_clear();
+      //  LCD_44780_write_string("99.99 ");
       itos((int32_t)f /*freq*/, st, 7);
       LCD_44780_write_string(st);
+      LCD_44780_write_string(":");
 
       float c = find_c(f); //freq);
-      uint32_t ci = (int)(c * 1E13);
+      LCD_44780_goto(0,1);
+      LCD_44780_write_string("C:");
+      display_c(c);
       
-      itos(ci, st, 6);
-      LCD_44780_goto(1, 4);
-      LCD_44780_write_string(st);
+      //uint32_t ci = (int)(c * 1E13);
+      
+      //itos(ci, st, 8);
+      //LCD_44780_goto(0,1);
+      //LCD_44780_write_string(st);
+
       int btns = get_buttons(); //(PIND >> 6)  & 0x03;
       itos(btns, st, 3);
       LCD_44780_write_string(st);
-      
-      // c++;
+
+      //    LCD_44780_goto(0,1);
+      //    print_int(ci,5,0);
+      //   LCD_44780_write_string(":pF");
+      //   LCD_44780_goto(8,0);
+      //  print_int(ci, 4,1, 0);
+      //   LCD_44780_write_string(" pF");
     }
   return 0;
 }
@@ -357,6 +374,142 @@ ButtonPress_t get_buttons(void)
 {
   uint8_t pins = (PIND >> 5) & 0x07;
   return (ButtonPress_t) pins;
+}
+
+#define MAX_CHARS 12  // ten digits plus sign, dec pt
+// dp of 0 won't put it in
+void print_int(int32_t num, int digits, int dp, int sign)
+{
+  int s = 0;
+  if(num < 0 & sign != 0)
+  {
+    s = 1;
+    num = -num;
+  }
+  uint8_t buff[MAX_CHARS];
+  int next = 0;  // count of characters
+  while(next < MAX_CHARS -1 ) // leave room for sign
+  {
+    buff[next] = num %10 + '0';
+    num /= 10;
+    next++;
+    if(next == dp)
+    {
+       buff[next] = '.';
+       next++;
+    }
+  }
+  // TODO add sign code
+
+  // Add one to digit count if dp displayed
+  if(dp != 0)
+    {
+      digits++;
+    }
+  while(digits > 0)
+    {
+      digits--;
+      LCD_44780_write_data(buff[digits]);
+      //  digits--;
+    }
+}
+
+      
+      
+		      
+		      
+  
+void display_c(float c)
+{
+  int scale = 0;
+  // Convert the float value of c to an int in tenths of pf
+  // Then scale it to be less than 10,000
+  // The display will go like this:
+  // 999.9 pf   scale 0
+  // 9.999 nF   scale 1
+  // 99.99 nF         2
+  // 999.9 nF         3
+  // 9.999 uF         4
+  // 99.99 uF         5
+  uint32_t c_scaled = (uint32_t) (c * 1E13 + 0.5); // tenths of pf
+  while(c_scaled > 9999)
+    {
+      c_scaled /= 10;
+      scale++;
+    }
+  int dp = 0;
+  // scale of 0,3, or 6 has one decimal place
+  // scale of 1, 4, or 7 has three decimal places
+  // scale of 2, 5, or 8 has two decimal places
+  if(scale == 0 || scale == 3 || scale == 6)
+    {
+      dp = 1;
+      print_int(c_scaled, 4, 1, 0);
+    }
+  else if(scale == 2 || scale == 5 || scale == 8)
+    {
+      dp = 2;
+      print_int(c_scaled, 4, 2, 0);
+    }
+  else if(scale == 1 || scale == 4 || scale == 7)
+    {
+      dp = 3;
+      print_int(c_scaled, 4, 3, 0);
+    }
+  // print_int(c_scaled, 4,dp,0);
+  switch (scale)
+    {
+    case 0: LCD_44780_write_string(" pF");
+      break;
+    case 1:
+    case 2:
+    case 3: LCD_44780_write_string(" nF");
+      break;
+    default: LCD_44780_write_string(" uF");
+    }
+  
+}
+
+void display_l(float l)
+{
+  int scale = 0;
+    // Convert the float value of l to an int in nH
+  // Then scale it to be less than 10,000
+  // The display will go like this:
+  // 9.999 uH         0
+  // 99.99 uH         1
+  // 999.9 uH         2
+  // 9.999 mH         3
+  // 99.99 mH         4
+  // 999.9 mH         5
+  // 9.999 H          6
+  
+  uint32_t l_scaled = (uint32_t) (l * 1E9 + 0.5); // nanohenries
+  while(l_scaled > 9999)
+    {
+      l_scaled /= 10;
+      scale++;
+    }
+  switch(scale)
+    {
+    case 2:
+    case 5:
+      print_int(scaled_l, 4, 1, 0);
+      break;
+    case 1:
+    case 4:
+      print_int(scaled_l, 4, 2, 0);
+      break;
+    case 0:
+    case 3:
+      print_int(scaled_l, 4, 3, 0);
+      break;
+    }
+  
+	    
+  
+  
+
 }
 
   

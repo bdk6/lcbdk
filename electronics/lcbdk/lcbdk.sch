@@ -16,12 +16,12 @@ $EndDescr
 $Comp
 L lcbdk-rescue:Arduino_Nano_v3.x-MCU_Module A?
 U 1 1 60ECED0E
-P 1400 6300
-F 0 "A?" H 1400 5214 50  0000 C CNN
-F 1 "Arduino_Nano_v3.x" H 1400 5123 50  0000 C CNN
-F 2 "Module:Arduino_Nano" H 1550 5350 50  0001 L CNN
-F 3 "http://www.mouser.com/pdfdocs/Gravitech_Arduino_Nano3_0.pdf" H 1400 5300 50  0001 C CNN
-	1    1400 6300
+P 12450 1350
+F 0 "A?" H 12450 264 50  0000 C CNN
+F 1 "Arduino_Nano_v3.x" H 12450 173 50  0000 C CNN
+F 2 "Module:Arduino_Nano" H 12600 400 50  0001 L CNN
+F 3 "http://www.mouser.com/pdfdocs/Gravitech_Arduino_Nano3_0.pdf" H 12450 350 50  0001 C CNN
+	1    12450 1350
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -30,20 +30,9 @@ U 1 1 60ECEDFC
 P 3650 1500
 F 0 "U?" H 3991 1546 50  0000 L CNN
 F 1 "LM311" H 3991 1455 50  0000 L CNN
-F 2 "" H 3650 1500 50  0001 C CNN
+F 2 "Package_DIP:DIP-8_W7.62mm_LongPads" H 3650 1500 50  0001 C CNN
 F 3 "http://www.ti.com/lit/ds/symlink/lm311.pdf" H 3650 1500 50  0001 C CNN
 	1    3650 1500
-	1    0    0    -1  
-$EndComp
-$Comp
-L Display_Character:HY1602E DS?
-U 1 1 60ECEEB6
-P 9550 3350
-F 0 "DS?" H 9550 4328 50  0000 C CNN
-F 1 "HY1602E" H 9550 4237 50  0000 C CNN
-F 2 "Display:HY1602E" H 9550 2450 50  0001 C CIN
-F 3 "http://www.icbank.com/data/ICBShop/board/HY1602E.pdf" H 9750 3450 50  0001 C CNN
-	1    9550 3350
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -193,8 +182,8 @@ $Comp
 L Device:C_Small C2
 U 1 1 63FA2ABE
 P 2250 1850
-F 0 "C2" H 2342 1896 50  0000 L CNN
-F 1 "1000pF 2%" H 2342 1805 50  0000 L CNN
+F 0 "C2" H 2100 1950 50  0000 L CNN
+F 1 "1000pF" H 2000 1750 50  0000 L CNN
 F 2 "Capacitor_THT:C_Rect_L4.6mm_W2.0mm_P2.50mm_MKS02_FKP02" H 2250 1850 50  0001 C CNN
 F 3 "~" H 2250 1850 50  0001 C CNN
 	1    2250 1850
@@ -607,17 +596,6 @@ Connection ~ 2700 2550
 Wire Wire Line
 	2700 2550 2700 2600
 $Comp
-L Relay:IM11 K?
-U 1 1 640B7F83
-P 2450 4100
-F 0 "K?" H 3080 4146 50  0000 L CNN
-F 1 "IM11" H 3080 4055 50  0000 L CNN
-F 2 "" H 2450 4100 50  0001 C CNN
-F 3 "http://www.te.com/commerce/DocumentDelivery/DDEController?Action=srchrtrv&DocNm=108-98001&DocType=SS&DocLang=EN" H 2450 4100 50  0001 C CNN
-	1    2450 4100
-	0    -1   -1   0   
-$EndComp
-$Comp
 L bdk_Micro:Atmega8_dip U?
 U 1 1 640C8D2E
 P 6500 2650
@@ -631,21 +609,9 @@ $EndComp
 Wire Wire Line
 	7150 3650 7950 3650
 Wire Wire Line
-	7950 3650 7950 2750
+	7950 3650 7950 3100
 Wire Wire Line
-	7950 2750 9150 2750
-Wire Wire Line
-	7150 3250 8000 3250
-Wire Wire Line
-	7150 3750 8050 3750
-Wire Wire Line
-	8000 3250 8000 2950
-Wire Wire Line
-	8000 2950 9150 2950
-Wire Wire Line
-	8050 3750 8050 3050
-Wire Wire Line
-	8050 3050 9150 3050
+	7150 3750 8000 3750
 Wire Wire Line
 	5850 4050 5800 4050
 Wire Wire Line
@@ -663,32 +629,11 @@ Wire Wire Line
 Wire Wire Line
 	8150 3750 9150 3750
 Wire Wire Line
-	7150 3950 8200 3950
-Wire Wire Line
-	8200 3950 8200 3850
-Wire Wire Line
-	8200 3850 9150 3850
+	7150 3950 8050 3950
 Wire Wire Line
 	7150 3850 8000 3850
 Wire Wire Line
-	8000 3850 8000 4300
-Wire Wire Line
-	8000 4300 9100 4300
-Wire Wire Line
-	9100 4300 9100 3950
-Wire Wire Line
-	9100 3950 9150 3950
-$Comp
-L Display_Character:RC1602A U?
-U 1 1 641115CC
-P 10400 3350
-F 0 "U?" H 10400 4231 50  0000 C CNN
-F 1 "RC1602A" H 10400 4140 50  0000 C CNN
-F 2 "Display:RC1602A" H 10500 2550 50  0001 C CNN
-F 3 "http://www.raystar-optronics.com/down.php?ProID=18" H 10500 3250 50  0001 C CNN
-	1    10400 3350
-	1    0    0    -1  
-$EndComp
+	8000 3850 8000 4000
 Wire Wire Line
 	4200 1500 5000 1500
 Wire Wire Line
@@ -712,7 +657,7 @@ U 1 1 6405EA8D
 P 700 2500
 F 0 "SW?" V 746 2312 50  0000 R CNN
 F 1 "SW_DPDT_x2" V 655 2312 50  0000 R CNN
-F 2 "" H 700 2500 50  0001 C CNN
+F 2 "bdk_electromechanical:ESwitch_TL2202_DPDT" H 700 2500 50  0001 C CNN
 F 3 "~" H 700 2500 50  0001 C CNN
 	1    700  2500
 	0    -1   -1   0   
@@ -723,7 +668,7 @@ U 2 1 64061EEC
 P 4500 4800
 F 0 "SW?" V 4546 4612 50  0000 R CNN
 F 1 "SW_DPDT_x2" V 4455 4612 50  0000 R CNN
-F 2 "" H 4500 4800 50  0001 C CNN
+F 2 "bdk_electromechanical:ESwitch_TL2202_DPDT" H 4500 4800 50  0001 C CNN
 F 3 "~" H 4500 4800 50  0001 C CNN
 	2    4500 4800
 	0    -1   -1   0   
@@ -731,12 +676,12 @@ $EndComp
 $Comp
 L Switch:SW_DPDT_x2 SW?
 U 1 1 6407DC60
-P 1400 2500
-F 0 "SW?" V 1446 2312 50  0000 R CNN
-F 1 "SW_DPDT_x2" V 1355 2312 50  0000 R CNN
-F 2 "" H 1400 2500 50  0001 C CNN
-F 3 "~" H 1400 2500 50  0001 C CNN
-	1    1400 2500
+P 1400 2450
+F 0 "SW?" V 1446 2262 50  0000 R CNN
+F 1 "SW_DPDT_x2" V 1355 2262 50  0000 R CNN
+F 2 "bdk_electromechanical:ESwitch_TL2202_DPDT" H 1400 2450 50  0001 C CNN
+F 3 "~" H 1400 2450 50  0001 C CNN
+	1    1400 2450
 	0    -1   -1   0   
 $EndComp
 $Comp
@@ -745,7 +690,7 @@ U 2 1 6407E5C5
 P 5300 4800
 F 0 "SW?" V 5346 4612 50  0000 R CNN
 F 1 "SW_DPDT_x2" V 5255 4612 50  0000 R CNN
-F 2 "" H 5300 4800 50  0001 C CNN
+F 2 "bdk_electromechanical:ESwitch_TL2202_DPDT" H 5300 4800 50  0001 C CNN
 F 3 "~" H 5300 4800 50  0001 C CNN
 	2    5300 4800
 	0    -1   -1   0   
@@ -766,7 +711,7 @@ U 2 1 64080F8C
 P 3900 4800
 F 0 "SW?" V 3946 4612 50  0000 R CNN
 F 1 "SW_DPDT_x2" V 3855 4612 50  0000 R CNN
-F 2 "" H 3900 4800 50  0001 C CNN
+F 2 "bdk_electromechanical:ESwitch_TL2202_DPDT" H 3900 4800 50  0001 C CNN
 F 3 "~" H 3900 4800 50  0001 C CNN
 	2    3900 4800
 	0    -1   -1   0   
@@ -858,7 +803,7 @@ U 1 1 640E54E4
 P 3450 4850
 F 0 "SW?" V 3496 4662 50  0000 R CNN
 F 1 "SW_DPDT_x2" V 3405 4662 50  0000 R CNN
-F 2 "" H 3450 4850 50  0001 C CNN
+F 2 "bdk_electromechanical:ESwitch_TL2202_DPDT" H 3450 4850 50  0001 C CNN
 F 3 "~" H 3450 4850 50  0001 C CNN
 	1    3450 4850
 	0    -1   -1   0   
@@ -866,16 +811,14 @@ $EndComp
 $Comp
 L power:GND #PWR?
 U 1 1 64103509
-P 700 3000
-F 0 "#PWR?" H 700 2750 50  0001 C CNN
-F 1 "GND" H 705 2827 50  0000 C CNN
-F 2 "" H 700 3000 50  0001 C CNN
-F 3 "" H 700 3000 50  0001 C CNN
-	1    700  3000
+P 700 4950
+F 0 "#PWR?" H 700 4700 50  0001 C CNN
+F 1 "GND" H 705 4777 50  0000 C CNN
+F 2 "" H 700 4950 50  0001 C CNN
+F 3 "" H 700 4950 50  0001 C CNN
+	1    700  4950
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	700  2700 700  2950
 Wire Wire Line
 	1250 1400 600  1400
 Wire Wire Line
@@ -883,7 +826,7 @@ Wire Wire Line
 Wire Wire Line
 	600  1900 1300 1900
 Wire Wire Line
-	1300 1900 1300 2300
+	1300 1900 1300 2250
 Connection ~ 600  1900
 Wire Wire Line
 	600  1900 600  2300
@@ -892,31 +835,218 @@ Wire Wire Line
 Wire Wire Line
 	1300 1650 1950 1650
 Connection ~ 1300 1900
-Wire Wire Line
-	1400 2950 700  2950
-Connection ~ 700  2950
-Wire Wire Line
-	700  2950 700  3000
 $Comp
 L Connector:TestPoint j1
 U 1 1 64127C36
-P 1400 2700
-F 0 "j1" V 1354 2888 50  0000 L CNN
-F 1 "Binding Post" V 1445 2888 50  0000 L CNN
-F 2 "" H 1600 2700 50  0001 C CNN
-F 3 "~" H 1600 2700 50  0001 C CNN
-	1    1400 2700
+P 900 4350
+F 0 "j1" V 854 4538 50  0000 L CNN
+F 1 "Binding Post" V 945 4538 50  0000 L CNN
+F 2 "" H 1100 4350 50  0001 C CNN
+F 3 "~" H 1100 4350 50  0001 C CNN
+	1    900  4350
 	0    1    1    0   
 $EndComp
 $Comp
 L Connector:TestPoint j?
 U 1 1 641290E5
-P 1400 2950
-F 0 "j?" V 1354 3138 50  0000 L CNN
-F 1 "Binding Post" V 1445 3138 50  0000 L CNN
-F 2 "" H 1600 2950 50  0001 C CNN
-F 3 "~" H 1600 2950 50  0001 C CNN
-	1    1400 2950
+P 900 4650
+F 0 "j?" V 854 4838 50  0000 L CNN
+F 1 "Binding Post" V 945 4838 50  0000 L CNN
+F 2 "" H 1100 4650 50  0001 C CNN
+F 3 "~" H 1100 4650 50  0001 C CNN
+	1    900  4650
 	0    1    1    0   
 $EndComp
+$Comp
+L bdk_ElectroMechanical_Library:COMUS_ReedRelay_3570-1331 RY??
+U 1 1 641700CD
+P 2100 3400
+F 0 "RY??" H 2142 3515 50  0000 C CNN
+F 1 "COMUS_ReedRelay_3570-1331" H 2142 3424 50  0000 C CNN
+F 2 "bdk_electromechanical:COMUS_Relay_35701331" H 2200 3500 50  0001 C CNN
+F 3 "" H 2200 3500 50  0001 C CNN
+	1    2100 3400
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	2250 1950 2250 2250
+Wire Wire Line
+	2250 3100 2650 3100
+Wire Wire Line
+	2650 3100 2650 3550
+Wire Wire Line
+	2650 3550 2400 3550
+$Comp
+L power:GND #PWR?
+U 1 1 641AA32F
+P 2650 4400
+F 0 "#PWR?" H 2650 4150 50  0001 C CNN
+F 1 "GND" H 2655 4227 50  0000 C CNN
+F 2 "" H 2650 4400 50  0001 C CNN
+F 3 "" H 2650 4400 50  0001 C CNN
+	1    2650 4400
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2400 4000 2650 4000
+Wire Wire Line
+	2650 4000 2650 4400
+Connection ~ 1300 2250
+Wire Wire Line
+	1300 2250 1300 2300
+Wire Wire Line
+	900  4650 700  4650
+Connection ~ 700  4650
+Wire Wire Line
+	1400 2650 900  2650
+Wire Wire Line
+	900  2650 900  4350
+Wire Wire Line
+	700  2700 700  4650
+Wire Wire Line
+	700  4650 700  4950
+$Comp
+L power:VCC #PWR?
+U 1 1 64219BBF
+P 5700 2100
+F 0 "#PWR?" H 5700 1950 50  0001 C CNN
+F 1 "VCC" H 5715 2273 50  0000 C CNN
+F 2 "" H 5700 2100 50  0001 C CNN
+F 3 "" H 5700 2100 50  0001 C CNN
+	1    5700 2100
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:VCC #PWR?
+U 1 1 6421A71A
+P 2750 3350
+F 0 "#PWR?" H 2750 3200 50  0001 C CNN
+F 1 "VCC" H 2765 3523 50  0000 C CNN
+F 2 "" H 2750 3350 50  0001 C CNN
+F 3 "" H 2750 3350 50  0001 C CNN
+	1    2750 3350
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:VCC #PWR?
+U 1 1 6421B284
+P 5500 2100
+F 0 "#PWR?" H 5500 1950 50  0001 C CNN
+F 1 "VCC" H 5515 2273 50  0000 C CNN
+F 2 "" H 5500 2100 50  0001 C CNN
+F 3 "" H 5500 2100 50  0001 C CNN
+	1    5500 2100
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2400 3650 2750 3650
+Wire Wire Line
+	2750 3650 2750 3350
+Wire Wire Line
+	5700 2400 5700 2100
+Wire Wire Line
+	5850 3350 5500 3350
+Wire Wire Line
+	5500 3350 5500 2100
+$Comp
+L Device:C_Small C?
+U 1 1 6422DDE2
+P 2500 1850
+F 0 "C?" H 2350 1950 50  0000 L CNN
+F 1 "20pF" H 2300 1700 50  0000 L CNN
+F 2 "Capacitor_THT:C_Rect_L4.6mm_W2.0mm_P2.50mm_MKS02_FKP02" H 2500 1850 50  0001 C CNN
+F 3 "~" H 2500 1850 50  0001 C CNN
+	1    2500 1850
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2500 1750 2500 1650
+Wire Wire Line
+	2500 1650 2250 1650
+Connection ~ 2250 1650
+Wire Wire Line
+	2500 1950 2500 2250
+Wire Wire Line
+	2500 2250 2250 2250
+Connection ~ 2250 2250
+Wire Wire Line
+	2250 2250 2250 3100
+$Comp
+L power:VCC #PWR?
+U 1 1 6423B873
+P 7300 2050
+F 0 "#PWR?" H 7300 1900 50  0001 C CNN
+F 1 "VCC" H 7315 2223 50  0000 C CNN
+F 2 "" H 7300 2050 50  0001 C CNN
+F 3 "" H 7300 2050 50  0001 C CNN
+	1    7300 2050
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	7150 3550 7300 3550
+Wire Wire Line
+	7300 3550 7300 2050
+$Comp
+L bdk_display:LCD_SD1602H_16x2 DISP??
+U 1 1 64195D66
+P 9550 2800
+F 0 "DISP??" H 9450 2965 50  0000 C CNN
+F 1 "LCD_SD1602H_16x2" H 9450 2874 50  0000 C CNN
+F 2 "" H 10150 2800 50  0001 C CNN
+F 3 "" H 10150 2800 50  0001 C CNN
+	1    9550 2800
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	9150 3100 7950 3100
+Wire Wire Line
+	7900 3250 7900 3000
+Wire Wire Line
+	7900 3000 9150 3000
+Wire Wire Line
+	7150 3250 7900 3250
+Wire Wire Line
+	8000 3750 8000 2900
+Wire Wire Line
+	8000 2900 9150 2900
+Wire Wire Line
+	8050 3850 8050 3950
+Wire Wire Line
+	8050 3850 9150 3850
+$Comp
+L power:VCC #PWR?
+U 1 1 641F9E72
+P 9900 2700
+F 0 "#PWR?" H 9900 2550 50  0001 C CNN
+F 1 "VCC" H 9915 2873 50  0000 C CNN
+F 2 "" H 9900 2700 50  0001 C CNN
+F 3 "" H 9900 2700 50  0001 C CNN
+	1    9900 2700
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR?
+U 1 1 641FAA45
+P 9900 4150
+F 0 "#PWR?" H 9900 3900 50  0001 C CNN
+F 1 "GND" H 9905 3977 50  0000 C CNN
+F 2 "" H 9900 4150 50  0001 C CNN
+F 3 "" H 9900 4150 50  0001 C CNN
+	1    9900 4150
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	9750 2900 9900 2900
+Wire Wire Line
+	9900 2900 9900 2700
+Wire Wire Line
+	9900 4150 9900 3950
+Wire Wire Line
+	9900 3950 9750 3950
+Wire Wire Line
+	8250 3950 8250 4000
+Wire Wire Line
+	8250 3950 9150 3950
+Wire Wire Line
+	8000 4000 8250 4000
 $EndSCHEMATC
