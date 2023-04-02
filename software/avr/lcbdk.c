@@ -191,6 +191,11 @@ int main()
   DDRD |= 0x01;  // D0 has LED
   //PORTD |= 0x01; // turn it on
 
+  // set up for calibrate relay PD3
+  PORTD |= (1<<3);  // turn it off 1=off, 0=on
+  DDRD &= ~(1<<3);  // make it an output
+ 
+
   // set up for buttons
   DDRD &= ~0xc0; // set d6,d7 as inputs;
   PORTD |= 0xc0;  // turn on pullups
@@ -352,6 +357,7 @@ int calibrate(float* l, float* c, const float* k)
   w1 = 2 * PI * f1;
   lc = 1 / (w1 * w1);
   // enable calib c
+  PORTD &= ~(1<<3);  // turn on relay
   // measure f2
   new_l = ( 1/(w2 * w2) - 1/(w1 * w1) ) / *k;
   new_c = (1/ (w1 * w1)) / new_l;
@@ -494,15 +500,15 @@ void display_l(float l)
     {
     case 2:
     case 5:
-      print_int(scaled_l, 4, 1, 0);
+      print_int(l_scaled, 4, 1, 0);
       break;
     case 1:
     case 4:
-      print_int(scaled_l, 4, 2, 0);
+      print_int(l_scaled, 4, 2, 0);
       break;
     case 0:
     case 3:
-      print_int(scaled_l, 4, 3, 0);
+      print_int(l_scaled, 4, 3, 0);
       break;
     }
   

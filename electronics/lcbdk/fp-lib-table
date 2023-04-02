@@ -1,0 +1,3 @@
+(fp_lib_table
+  (lib (name comusReedRelay)(type KiCad)(uri ${KIPRJMOD}/comusReedRelay.pretty)(options "")(descr ""))
+)
