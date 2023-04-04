@@ -1,0 +1,109 @@
+Creating files for JLCPCB
+
+KiCad 5.x
+https://support.jlcpcb.com/article/149-how-to-generate-gerber-and-drill-files-in-kicad
+
+
+In PCB editor, select File -> Plot
+On left, select layers:
+x   F.Cu   (front copper)
+x   B.Cu   (back copper)
+    F.Adhes
+    B.Adhes
+x   F.Paste
+x   B.Paste
+x   F.SilkS
+x   B.SilkS
+x   F.Mask
+x   B.Mask
+    Dwgs.User
+    Cmts.User
+    Eco1.User
+    Eco2.User
+x   Edge Cuts   (Board Outline)
+    Margin
+    F.CrtYd
+    B.CrtYd
+    F.Fab
+    B.Fab
+
+Add appropriate layers for inside copper in 4/6 layer boards
+
+Choose output folder.  Best to use a separate folder for the output.
+
+In "General Options" select:
+    Plot border and title block
+x   Plot footprint values   (include val on silk 1K etc)
+x   Plot footprint references (include ref on silk U1 etc)
+    Force plotting of invisible values / refs
+x   Exclude PCB edge layer from other layers
+x   Exclude pads from silkscreen  (remove silkscreen from pads)
+    Do not tent vias
+    Use auxiliary axis as origin
+    Mirrored plot
+    Negative plot
+x   Check zone fills before plotting
+
+    Drill marks:         none
+    Scaling:             1:1
+    Plot mode:           filled
+    Default line width:  3.937008 mils
+
+In "Gerber Options" select:
+x   Use Protel filename extensions
+    Generate Gerber job file
+x   Subtract soldermask from silkscreen
+    Use extended X2 format
+    Include netlist attributes
+
+    Coordinate format:   4,6, unit mm
+
+
+Select plot:  if "refill zones" pops up, select "refill."
+  files are plotted, one per layer
+
+Select "Generate Drill Files":
+Make following selections:
+
+Drill File Format:
+x   Excellon
+        Mirror Y axis
+	Minimal Header
+	PTH and NPTH in single file
+
+        Oval Holes Drill Mode:
+	    Use route command
+	x   Use alternate drill mode
+
+    Gerber X2 (experimental)
+
+Map File Format:
+    HPGL
+    PostScript
+x   Gerber
+    DXF
+    SVG
+    PDF
+
+Drill Origin:
+x   Absolute
+    Auxiliary axis
+
+Drill Units:
+x   millimeters
+    inches
+
+Zeros Format:
+x   Decimal format
+    Suppress Leading zeros
+    keep zeros
+
+Precision:  3:3
+
+Click "Generate Drill File"
+  files placed in folder
+
+Generate Map File (optional but suggested)
+  Click "Generate Map File"
+    files placed in folder
+    
