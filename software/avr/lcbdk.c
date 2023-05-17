@@ -61,6 +61,11 @@ void display_c(float c);
 void display_l(float l);
 void print_int(int32_t num, int digits, int dp, int sign);
 
+//////////////////////////////////////////////////////////
+/// @fn timer0_init
+/// @brief set timer 0 to interrupt on overflow
+/// @remark It's clock will be the output of oscillator
+//////////////////////////////////////////////////////////
 void timer0_init(void)
 {
   // TCCR0
@@ -72,6 +77,10 @@ void timer0_init(void)
   TCNT0 = 0;
 }
 
+/////////////////////////////////////////////////////////
+///  @fn timer1_init
+///  @brief Sets up timer to measure count interval
+/////////////////////////////////////////////////////////
 // Timer1 (16 bit) times the measure interval
 // It interrupts on overflow
 // prescale 1024: 16 Mhz / 1024 = 15625
@@ -96,9 +105,24 @@ void timer1_init(void)
   TCNT1 = 0;
 }
 
+/////////////////////////////////////////////////////////
+/// @var upper_freq
+/// @brief Holds upper two bytes of oscillator count
+/////////////////////////////////////////////////////////
 static uint16_t upper_freq = 0;
+
+/////////////////////////////////////////////////////////
+/// @var freq
+/// @brief Holds calculated frequency
 static float freq = 0.0;
+
+/////////////////////////////////////////////////////////
+/// @var ready_flag
+/// @brief Indicates when measurement is complete
+/////////////////////////////////////////////////////////
 static volatile uint8_t ready_flag = 0;
+
+
 //void start_measure(void)
 //{
 //  // clear variables
@@ -114,6 +138,9 @@ static volatile uint8_t ready_flag = 0;
 //  TCCR0 |= 6; // clock on rising edge of t0
 //}
 
+///////////////////////////////////////////////////////
+/// @fn measure_frequency
+/// @brief 
 uint32_t measure_frequency(void)
 {
   uint32_t rtn = 0;
@@ -127,7 +154,7 @@ uint32_t measure_frequency(void)
   TCNT1 = 15536;  // 65536 - 50000
 
   // start timers
-  TCCR1B |= 3; // Set clock to div by 64 to start
+  TCCR1B |= 3; // Set clock to div by 64 (250KHz ) to start it
   TCCR0 |= 6;  // External clock on rising edge
 
   while(!ready_flag);  // Wait for timeout
@@ -211,9 +238,15 @@ int main()
   LCD_44780_goto(0,1);
   LCD_44780_write_string("Wait--warming up");
   _delay_ms(10000);
+
+  
   LCD_44780_goto(0,1);
   LCD_44780_write_string("Wait--calibrating");
   // calibrate
+  float l,c,k;
+  calibrate(&l, &c, &k);
+  LCD_44780_goto(0,1);
+  display_c(c);
   _delay_ms(3000);
   LCD_44780_clear();
   
@@ -267,6 +300,14 @@ int main()
 }
 
 
+//////////////////////////////////////////////////
+/// @fn itos
+/// @brief convert an int to a string
+/// @param[in] i The integer to convert
+/// @param[out] s Pointer to receiving string
+/// @param[in] c Length of output string
+/// @return
+/////////////////////////////////////////////////
 int itos(int32_t i, char* s, int c)
 {
   uint8_t neg = 0;
@@ -293,8 +334,13 @@ int itos(int32_t i, char* s, int c)
 
 
 
-//#define pi  3.1415926538
 
+///////////////////////////////////////////////
+/// @fn find_c
+/// @brief Calculate capacitance from measured freq
+/// @param[in] f The measured frequency.
+/// @return Calculated capacitance.
+///////////////////////////////////////////////
 float find_c(float f)
 {
   float rtn = 0.0;
@@ -304,6 +350,12 @@ float find_c(float f)
   return rtn;
 }
 
+/////////////////////////////////////////////////
+/// @fn find_l
+/// @brief Calculate inductance from measured freq
+/// @param[in] f The measured frequency.
+/// @return Calculated inductance
+////////////////////////////////////////////////
 float find_l(float f)
 {
   float rtn = 0.0;
@@ -317,19 +369,21 @@ float find_l(float f)
 
 // ///////////////////////////////////////////////////////////////////////////
 // Calibration
-// l == osc inductance (68 uH)
-// c == osc capacitance (680 pF)
-// k == calibration capacitance (1000 pF)
+// l == osc inductance (68 uH nominal)
+// c == osc capacitance (680 pF nominal)
+// k == calibration capacitance (1000 pF assumed accurate)
 //
+// f1 is freq without calibration cap
 // f1 = 1/(2 pi sqrt(lc))
 // sqrt(lc) = 1/(2 pi f1)
 // lc = (1/(2 pi f1))^2;
 //
+// f2 is freq with calibration cap
 // f2 = 1/(2 pi sqrt(l(c+k))
 // sqrt( l(c+k) ) = 1/(2 pi f2)
 // l(c+k) = (1/(2 pi f2))^2
 // lc + lk = (1/(2 pi f2))^2
-// sub for lc
+// sub for lc from f1 above
 // (1/(2 pi f1))^2 + lk = (1/(2 pi f2))^2
 // lk = (1/(2 pi f2))^2 - (1/(2 pi f1))^2
 // new_l = ( (1/(2 pi f2))^2 - (1/(2 pi f1))^2 ) / k
@@ -359,6 +413,8 @@ int calibrate(float* l, float* c, const float* k)
   // enable calib c
   PORTD &= ~(1<<3);  // turn on relay
   // measure f2
+  _delay_ms(5000);
+  PORTD |= (1<<3);  // turn off relay
   new_l = ( 1/(w2 * w2) - 1/(w1 * w1) ) / *k;
   new_c = (1/ (w1 * w1)) / new_l;
 

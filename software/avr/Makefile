@@ -183,3 +183,6 @@ lchex:
 lcflash:
 	avrdude -cavrisp -v -pm8 -P/dev/ttyUSB0 -b19200 -Uflash:w:lcbdk.hex:i
 
+lcfuse:
+	avrdude -cavrisp  -pm8 -P/dev/ttyUSB0 -b19200 -U lfuse:w:0xef:m -U hfuse:w:0xd9:m 
+
