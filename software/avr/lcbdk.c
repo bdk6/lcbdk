@@ -7,6 +7,10 @@
 
 #include "lcd_44780.h"
 
+#define VERSION_MAJOR      1
+#define VERSION_MINOR      1
+#define VERSION_BUILD      0
+
 #define PI 3.14159265
 #define READ_PER_SEC 5.0
 
@@ -19,39 +23,42 @@
 // ///////////////////////////////////////////////////////////////////////////
 typedef enum ButtonPress
 {
-  BTN_ALL     = 0,
-  BTN_LC      = 1,
-  BTN_LZ      = 2,
-  BTN_L       = 3,
-  BTN_CZ      = 4,
-  BTN_C       = 5,
-  BTN_Z       = 6,
-  BTN_NONE    = 7
+  BTN_ALL     = 7,
+  BTN_LC      = 6,
+  BTN_CZ      = 5,
+  BTN_C       = 4,
+  BTN_LZ      = 3,
+  BTN_L       = 2,
+  BTN_Z       = 1,
+  BTN_NONE    = 0
 } ButtonPress_t;
 
 typedef enum OpMode
   {
-    MODE_MEASURE_n,
-    MODE_MEASURE_u,
-    MODE_MATCH_n,
-    MODE_MATCH_u,
-    MODE_MATCH_PERCENT
+    MODE_MEASURE_NANO,
+    MODE_MEASURE_MICRO,
+    MODE_MATCH_NANO,
+    MODE_MATCH_MICRO,
+    MODE_MATCH_PERCENT,
+    MODE_CALIBRATE,
+    MODE_LIST_END
   } OpMode_t;
 
-OpMode_t current_mode = MODE_MEASURE_n;
+OpMode_t current_mode = MODE_MEASURE_NANO;
 
 volatile static int t1_count = 0;
 volatile static int t0_count = 0;
 
-static float osc_l = 0.000068; //0.000068; // 68 uH
-static float osc_c = 650E-12;
+static float osc_l = 68E-6;
+static float osc_c = 680E-12;
 static float stray_l = 0.0;
 static float stray_c = 0.0;
+static float match_l = 0.0;
+static float match_c = 0.0;
 
 
 void init_buttons(void);
 ButtonPress_t get_buttons(void);
-
 int itos(int32_t i, char* s, int c);
 float find_c(float f);
 float find_l(float f);
@@ -59,6 +66,7 @@ int calibrate(float* l, float* c, const float* k);
 uint32_t measure_frequency(void);
 void display_c(float c);
 void display_l(float l);
+void display_mode( OpMode_t mode);
 void print_int(int32_t num, int digits, int dp, int sign);
 
 //////////////////////////////////////////////////////////
@@ -123,21 +131,6 @@ static float freq = 0.0;
 static volatile uint8_t ready_flag = 0;
 
 
-//void start_measure(void)
-//{
-//  // clear variables
-//  upper_freq = 0;
-//  freq = 0;
-//  
-//  // clear timers
-//  TCNT0 = 0;
-//  TCNT1 = 15536;  // 65536 - 50000
-//  
-//  // start timers
-//  TCCR1B  |= 3; // div 64 -- start
-//  TCCR0 |= 6; // clock on rising edge of t0
-//}
-
 ///////////////////////////////////////////////////////
 /// @fn measure_frequency
 /// @brief 
@@ -159,6 +152,9 @@ uint32_t measure_frequency(void)
 
   while(!ready_flag);  // Wait for timeout
   ready_flag = 0;
+  // Stop timers
+  TCCR1B &= ~7;
+  TCCR0 &= ~7;
 
   return freq;
 }
@@ -189,40 +185,17 @@ ISR(TIMER0_OVF_vect)
   upper_freq++;
 }
 
-
-void operate(void)
-{
-  // wait for button
-  // if button is ZERO
-  //   next mode
-  // else if button is L
-  //   measure L
-  // else is button is C
-  //  measure C
-
-  // Get buttons
-  // if none, calibrate
-  // else if L measure L
-  // else if C measure C
-  // else if Z change mode
-  // else if L and Z Zero L
-  // else if C and Z Zero C
-  // 
-
-}
-
   
 ///////////////////////////////////////////////////////////////
 int main()
 {
-  DDRD |= 0x01;  // D0 has LED
+  //DDRD |= 0x01;  // D0 has LED
   //PORTD |= 0x01; // turn it on
 
   // set up for calibrate relay PD3
   PORTD |= (1<<3);  // turn it off 1=off, 0=on
-  DDRD &= ~(1<<3);  // make it an output
+  DDRD  |= (1<<3);  // make it an output
  
-
   // set up for buttons
   DDRD &= ~0xc0; // set d6,d7 as inputs;
   PORTD |= 0xc0;  // turn on pullups
@@ -234,67 +207,223 @@ int main()
   LCD_44780_clear();
   
   LCD_44780_write_string("LC BDK (c) 2023 William Cooke");
+  
   char st[10];
   LCD_44780_goto(0,1);
   LCD_44780_write_string("Wait--warming up");
-  _delay_ms(10000);
+  _delay_ms(1000);
 
+  sei();   // Enable interrupts before measuring
   
   LCD_44780_goto(0,1);
   LCD_44780_write_string("Wait--calibrating");
+  
   // calibrate
   float l,c,k;
+  k = 1000E-12;
   calibrate(&l, &c, &k);
+  osc_l = l;
+  osc_c = c;
+  
   LCD_44780_goto(0,1);
   display_c(c);
-  _delay_ms(3000);
+  LCD_44780_goto(8,1);
+  display_l(l);
+  _delay_ms(1000);
   LCD_44780_clear();
+  LCD_44780_goto(0,0);
+  display_mode(current_mode);
   
-  //  int c = 0;
-  PORTD &= 0xfe;  // turn off LED
-  sei();
-  //start_measure();
+  // gone!  PORTD &= 0xfe;  // turn off LED
+
   while(1)
-    {
-      int tmp = t1_count;
+    {      
+      ButtonPress_t  btns = get_buttons();
+      //LCD_44780_goto(8,0);
+      //print_int(btns, 2,0,0 );  // num, digits, dp, sign
+      float f1 = 0.0;
+      float calc_l = 0.0;
+      float calc_c = 0.0;
+      uint32_t fi = 0;
+      if(btns == BTN_Z)
+	{
+	  current_mode++;
+	  if(current_mode == MODE_LIST_END)
+	    {
+	      current_mode = MODE_MEASURE_NANO;
+	    }
+	  LCD_44780_goto(0,0);
+	  display_mode(current_mode);
+	  while(get_buttons() == BTN_Z); // wait for release
+	  switch(current_mode)
+	    {
+	    case MODE_MEASURE_NANO:
+	    case MODE_MEASURE_MICRO:
+	      break;
+	    case MODE_MATCH_NANO:
+	    case MODE_MATCH_MICRO:
+	    case MODE_MATCH_PERCENT:
+	      match_l = 0.0;
+	      match_c = 0.0;
+	      break;
+	    case MODE_CALIBRATE:
+	      break;
+	    default:
+	      break;
+	    }
+	}
 
-      uint32_t f = measure_frequency();
+      // Get rid of "stray" on display if there.
+      LCD_44780_goto(8,1);
+      LCD_44780_write_string("        ");
+      LCD_44780_goto(8,1);
+      print_int(btns, 3, 0, 0);
       
-      if(t1_count & 1)
-      {
-       PORTD |= 1;
-      }
-      else
-      {
-       PORTD &= 0xfe;
-      }
-      LCD_44780_clear();
-      //  LCD_44780_write_string("99.99 ");
-      itos((int32_t)f /*freq*/, st, 7);
-      LCD_44780_write_string(st);
-      LCD_44780_write_string(":");
+      switch(current_mode)
+	{
+	case MODE_MEASURE_NANO:
+	case MODE_MEASURE_MICRO:
+	  switch(btns)
+	    {
+	    case BTN_L:
+	      // measure freq
+	      fi = measure_frequency();
+	      // make sure it is valid
+	      btns = get_buttons();
+	      if(btns == BTN_L && fi != 0)
+              {	
+	        LCD_44780_goto(8,0);
+	        print_int(fi, 6,0,0);
+	        f1 = (float)fi;
+	        // calc l
+	        calc_l = find_l(f1);
+	        // display l
+	        LCD_44780_goto(0,1);
+	        display_l(calc_l - osc_l - stray_l);
+              }
+	      break;
+	    case BTN_C:
+	      // measure freq
+	      fi = measure_frequency();
+	      // make sure it is valid
+	      btns = get_buttons();
+	      if(btns == BTN_C && fi != 0)
+	      {
+	        LCD_44780_goto(8,0);
+	        print_int(fi, 6, 0, 0);
+	        f1 = (float)fi;
+	        // calc c
+	        calc_c = find_c(f1);
+  	        // display c
+	        LCD_44780_goto(0,1);
+	        display_c(calc_c - osc_c - stray_c);
+	      }
+	      break;
+	    case BTN_LZ:
+	      // measure freq
+	      fi = measure_frequency();
+	      // make sure its valid
+	      btns = get_buttons();
+	      if( (btns == BTN_LZ || btns == BTN_L) && fi != 0)
+		{
+		  LCD_44780_goto(8,0);
+		  print_int(fi, 6, 0, 0);
+		  f1 = (float)fi;
+		  // calc l
+		  calc_l = find_l(f1);
+	          // store stray
+		  LCD_44780_goto(0,1);
+		  display_l(calc_l - osc_l);
+		  stray_l = calc_l - osc_l;
+		  LCD_44780_goto(8,1);
+		  LCD_44780_write_string("Stray");
+		}
+	      break;
+	    case BTN_CZ:
+	      // measure freq
+	      fi = measure_frequency();
+	      // make sure its valid
+	      btns = get_buttons();
+	      LCD_44780_goto(8,1);
+	      print_int(btns, 3, 0, 0);
+	      LCD_44780_write_string("CZ");
+	      
+	      if( (btns == BTN_CZ || btns == BTN_C) && fi != 0)
+		{
+		  LCD_44780_goto(8,0);
+		  print_int(fi, 6, 0, 0);
+		  f1 = (float)fi;
+	      // calc c
+		  calc_c = find_c(f1);
+	      // store stray
+		  LCD_44780_goto(0,1);
+		  LCD_44780_write_string("zero c");
+		  //display_c(calc_c - osc_c);
+		  stray_c = calc_c - osc_c;
+		  LCD_44780_goto(10,1);
+		  LCD_44780_write_string("Stray");
+		  _delay_ms(300);
+		}
+	      break;
+	    case BTN_Z:
+	      // already handled
+	      break;
+	    case BTN_LC:  // not valid
+	      break;
+	    case BTN_ALL:  // not valid
+	      break;
+	    default:
+	      break;
+	    }
+            break;
+	case MODE_MATCH_NANO:
+	case MODE_MATCH_MICRO:
+	case MODE_MATCH_PERCENT:
+	  switch(btns)
+	    {
+	    case BTN_L:
+	      // measure frequency
+	      fi = measure_frequency();
+	      // 
+	      btns = get_buttons();
+	      LCD_44780_goto(8,0);
+	      print_int(fi, 6, 0, 0);
+	      f1 = (float)fi;
+	      calc_l = find_l(f1);
+	      
+	      if( btns == BTN_L )
+		{
+		  if(match_l != 0.0)
+		    {
+		      // Show match
+		      float diff = calc_l - osc_l - stray_l - match_l;
+		      display_l(diff);
+		      
+		    }
+		}
+	      
+	      if( btns == BTN_LZ )
+		{
+		  match_l = calc_l - osc_l - stray_l;
+		}
+	      
 
-      float c = find_c(f); //freq);
-      LCD_44780_goto(0,1);
-      LCD_44780_write_string("C:");
-      display_c(c);
-      
-      //uint32_t ci = (int)(c * 1E13);
-      
-      //itos(ci, st, 8);
-      //LCD_44780_goto(0,1);
-      //LCD_44780_write_string(st);
-
-      int btns = get_buttons(); //(PIND >> 6)  & 0x03;
-      itos(btns, st, 3);
-      LCD_44780_write_string(st);
-
-      //    LCD_44780_goto(0,1);
-      //    print_int(ci,5,0);
-      //   LCD_44780_write_string(":pF");
-      //   LCD_44780_goto(8,0);
-      //  print_int(ci, 4,1, 0);
-      //   LCD_44780_write_string(" pF");
+	      break;
+	    case BTN_C:
+	      break;
+	    }
+	  break;
+	 
+	case MODE_CALIBRATE:
+	  if( btns == BTN_Z )
+	    {
+	      // calibrate
+	    }
+	  break;
+	  
+	default:
+	  break;
+	}
     }
   return 0;
 }
@@ -391,7 +520,7 @@ float find_l(float f)
 //
 // To calibrate
 // Measure f1 with no added l or c
-// Switch in calib cap
+// Switch in calibration cap
 // Measure f2
 // Find l from above
 // using f1 and l, find c
@@ -407,39 +536,99 @@ int calibrate(float* l, float* c, const float* k)
   float new_l;
   float new_c;
   int rtn = 0;
+
+  int32_t tmp;
+  char st[10];
+  LCD_44780_clear();
+  
   // measure f1
+  tmp = measure_frequency();
+  itos(tmp, st, 7);
+  LCD_44780_clear();
+  LCD_44780_goto(0,0);
+  LCD_44780_write_string(st);
+  LCD_44780_write_string(":");
+
+  f1 = (float) tmp;
   w1 = 2 * PI * f1;
   lc = 1 / (w1 * w1);
-  // enable calib c
+  
+  // enable calibration cap
   PORTD &= ~(1<<3);  // turn on relay
+  _delay_ms(100); // Let relay and osc stabilize
+  
   // measure f2
-  _delay_ms(5000);
+  tmp = measure_frequency();
+  itos(tmp + 10, st, 7);
+   LCD_44780_goto(0,1);
+  LCD_44780_write_string(st);
+  
+  f2 = (float) tmp;
+
+  // disable calibration cap
   PORTD |= (1<<3);  // turn off relay
+  
+  w2 = 2 * PI * f2;
   new_l = ( 1/(w2 * w2) - 1/(w1 * w1) ) / *k;
   new_c = (1/ (w1 * w1)) / new_l;
+  
+  //_delay_ms(4000);
 
   // make sure it makes sense, then...
   *l = new_l;
   *c = new_c;
+  
+  LCD_44780_goto(0,1);
+  display_c(new_c);
+  LCD_44780_goto(8,1);
+  display_l(new_l);
+  //_delay_ms(5000);
+
   rtn = 1;
+  //_delay_ms(10000);
   return rtn;
 }
 
 
+//////////////////////////////////////////////////////////////////////
+/// @fn init_buttons
+/// @brief Set up I/O to read buttons
+//////////////////////////////////////////////////////////////////////
 void init_buttons(void)
 {
   DDRD &= ~(0xe0); // 7,6,5 as inputs
   PORTD |= 0xe0;   // turn on pullups
 }
 
+/////////////////////////////////////////////////////////////////////
+/// @fn get_buttons
+/// @brief Debounce and read all buttons
+/// @return ButtonPress_t value indicating all buttons pressed
+////////////////////////////////////////////////////////////////////
 ButtonPress_t get_buttons(void)
 {
-  uint8_t pins = (PIND >> 5) & 0x07;
+  // Buttons on D7(L), D6(C), D5(ZERO)
+  // Low when pressed so invert reading
+  // AND together 5 readings at 2 ms intervals
+  uint8_t pins = 0x07;
+  for(int i = 0; i < 5; i++)
+    {
+      pins &= ( ~(PIND >> 5) & 0x07);
+      _delay_ms(2);
+    }
   return (ButtonPress_t) pins;
 }
 
 #define MAX_CHARS 12  // ten digits plus sign, dec pt
 // dp of 0 won't put it in
+//////////////////////////////////////////////////////////////////
+/// @fn print_int
+/// @brief Prints decimal int up to ten digits plus sign and DP.
+/// @param[in] num  The integer to convert.
+/// @param[in] digits Number of digits to use, right justified.
+/// @param[in] dp Number of places from right to put decimal point.
+/// @param[in] sign Zero for no sign, non-zero for sign.
+//////////////////////////////////////////////////////////////////
 void print_int(int32_t num, int digits, int dp, int sign)
 {
   int s = 0;
@@ -480,7 +669,11 @@ void print_int(int32_t num, int digits, int dp, int sign)
       
 		      
 		      
-  
+///////////////////////////////////////////////////////////////////
+/// @fn display_c
+/// @brief Displays capacitance value
+/// @param[in] c Capacitance value in Farads.
+//////////////////////////////////////////////////////////////////
 void display_c(float c)
 {
   int scale = 0;
@@ -494,6 +687,14 @@ void display_c(float c)
   // 9.999 uF         4
   // 99.99 uF         5
   uint32_t c_scaled = (uint32_t) (c * 1E13 + 0.5); // tenths of pf
+  //char st[12];
+  //itos(c_scaled, st, 9);
+  //LCD_44780_clear();
+  //LCD_44780_goto(0,0);
+  //LCD_44780_write_string(st);
+  //LCD_44780_write_string(" C");
+  //_delay_ms(3000);
+  
   while(c_scaled > 9999)
     {
       c_scaled /= 10;
@@ -532,6 +733,11 @@ void display_c(float c)
   
 }
 
+///////////////////////////////////////////////////////////////
+/// @fn display_l
+/// @brief Displays Inductance value.
+/// @param[in] l Inductance in Henries.
+///////////////////////////////////////////////////////////////
 void display_l(float l)
 {
   int scale = 0;
@@ -567,14 +773,55 @@ void display_l(float l)
       print_int(l_scaled, 4, 3, 0);
       break;
     }
-  
-	    
-  
-  
-
+  switch(scale)
+    {
+    case 0:
+    case 1:
+    case 2:
+      LCD_44780_write_string(" uH");
+      break;
+    case 3:
+    case 4:
+    case 5:
+      LCD_44780_write_string(" mH");
+      break;
+    case 6:
+      LCD_44780_write_string(" H");
+      break;
+    default:
+      break;
+    }
 }
 
-  
-
-  
-  
+////////////////////////////////////////////////////////
+///  @fn display_mode
+///  @brief Writes mode name to top line of display
+////////////////////////////////////////////////////////
+void display_mode(OpMode_t mode)
+{
+  LCD_44780_goto(0,0);
+  switch(mode)
+    {
+    case MODE_MEASURE_NANO:
+      LCD_44780_write_string("Measure NANO    ");
+      break;
+    case MODE_MEASURE_MICRO:
+      LCD_44780_write_string("Measure u       ");
+      break;
+    case MODE_MATCH_NANO:
+      LCD_44780_write_string("Match n         ");
+      break;
+    case MODE_MATCH_MICRO:
+      LCD_44780_write_string("Match u         ");
+      break;
+    case MODE_MATCH_PERCENT:
+      LCD_44780_write_string("Match Percent   ");
+      break;
+    case MODE_CALIBRATE:
+      LCD_44780_write_string("Calibrate       ");
+      break;
+    default:
+      LCD_44780_write_string("MODE ERROR!     ");
+    }
+  return;
+}
