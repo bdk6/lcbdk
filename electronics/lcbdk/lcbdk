@@ -1,0 +1,51 @@
+Source,/home/wrcooke/github/lcbdk/electronics/lcbdk/lcbdk.sch
+Kicad Rev,Eeschema 5.1.9+dfsg1-1+deb11u1
+Generated Date,Fri 09 Jun 2023 06:39:46 AM CDT
+
+Title,Not Set
+Company,Not Set
+Revision,Not Set
+Date Issue,Not Set
+
+Reference,Value,Library,Library Ref
+J3,Conn_01x02,Connector_Generic,Conn_01x02
+SW4,TE2202,Switch,SW_DPDT_x2
+RV1,10K,Device,R_POT_US
+C8,0.1,Device,C_Small
+C6,0.1,Device,C_Small
+C7,0.1,Device,C_Small
+C11,10,Device,CP1_Small
+C13,.01,Device,C_Small
+C12,.33,Device,C_Small
+U3,L78L05_TO92,Regulator_Linear,L78L05_TO92
+DISP1,LCD_SD1602H_16x2,bdk_display,LCD_SD1602H_16x2
+C2b1,20pF,Device,C_Small
+RY1,COMUS_ReedRelay_3570-1331,bdk_ElectroMechanical_Library,COMUS_ReedRelay_3570-1331
+j2,Binding Post,Connector,TestPoint
+j1,Binding Post,Connector,TestPoint
+SW1,Zero,Switch,SW_DPDT_x2
+SW3,Meas_C,Switch,SW_DPDT_x2
+SW2,Meas_L,Switch,SW_DPDT_x2
+Y1,16 MHz,Device,Crystal_Small
+U2,Atmega8_dip,bdk_Micro,Atmega8_dip
+R4,47K,Device,R_Small_US
+R3,100K,Device,R_Small_US
+R2,100K,Device,R_Small_US
+L1,68uH,Device,L
+C3,10,Device,CP1_Small
+C4,10,Device,CP1_Small
+C5,0.1,Device,C_Small
+C1,680pF,Device,C_Small
+C2a1,1000pF,Device,C_Small
+C10,22,Device,C_Small
+C9,22,Device,C_Small
+R1,100K,Device,R_Small_US
+R5,1K,Device,R_Small_US
+R6,10K,Device,R_Small_US
+U1,LM311,lcbdk-rescue,LM311-Comparator
+C14,0.1,Device,C_Small
+J4,AVR-ISP-6,Connector,AVR-ISP-6
+H1,M3,Mechanical,MountingHole_Pad
+H2,M3,Mechanical,MountingHole_Pad
+H3,M3,Mechanical,MountingHole_Pad
+H4,M3,Mechanical,MountingHole_Pad

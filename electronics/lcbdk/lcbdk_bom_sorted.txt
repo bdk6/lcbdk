@@ -1,0 +1,45 @@
+C1       680pF
+C2a1     1000pF
+C2b1     20pF
+C3       10uF
+C4       10uF
+C5       0.1uF
+C6       0.1uF
+C7       0.1uF
+C8       0.1uF
+C9       22pF
+C10      22pF
+C11      10 uF
+C12      .33uF
+C13      .01uF
+C14       0.1uF
+
+DISP1     LCD_SD1602H_16x2
+
+j1        Binding Post
+j2        Binding Post
+J3        Conn_01x02
+J4        AVR-ISP-6
+
+L1        68uH
+
+R1        100K
+R2        100K
+R3        100K
+R4        47K
+R5        1K
+R6        10K
+
+RV1       10K
+RY1       COMUS_ReedRelay_3570-1331
+
+SW1       Zero
+SW2       Meas_L
+SW3       Meas_C
+SW4       TE2202
+
+U1        LM311
+U2        Atmega8_dip
+U3        L78L05_TO92
+
+Y1        16 MHz
